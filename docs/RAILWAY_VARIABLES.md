@@ -54,15 +54,40 @@ Ne pas définir `SQLite` ni `DB_CONNECTION=sqlite` sur Railway (système de fich
 > Sans volume, les uploads disparaissent à chaque redéploiement (système de fichiers
 > éphémère). Le volume doit être monté **avant** le premier déploiement contenant des données.
 
-## 4. OTP et e-mails (SMTP Gmail)
+## 4. OTP et e-mails
+
+> **Important — SMTP bloqué sur les plans gratuits/Hobby.** Railway bloque tout
+> SMTP sortant (ports 25/465/587/2525) hors plan **Pro** (cf. docs.railway.com →
+> Outbound Networking → Email delivery). En conséquence, la production utilise un
+> service d'e-mail **en API HTTPS** : SendGrid (transport custom `sendgrid`,
+> livré dans ce dépôt — `app/Mail/Transport/SendGridTransport.php`). Le SMTP Gmail
+> n'est possible que sur plan Pro.
+
+### 4a. Envoi via SendGrid (API HTTPS — fonctionne sur TOUS les plans)
 
 | Variable | Valeur | Obligatoire | Commentaire |
 | -------- | ------ | ----------- | ----------- |
-| `OTP_DELIVERY` | `mail` | ✅ | `log` en dev, `mail` en prod (SMTP). |
+| `OTP_DELIVERY` | `mail` | ✅ | `log` en dev, `mail` en prod. |
+| `MAIL_MAILER` | `sendgrid` | ✅ | Transport HTTPS API (aucun port SMTP requis). |
+| `SENDGRID_API_KEY` | `SG.<clé>` | ✅ | Compte sendgrid.com → Settings → API Keys (permissions « Mail Send »). |
+| `MAIL_FROM_ADDRESS` | `panneoartisan@gmail.com` | ✅ | Doit être un **expéditeur vérifié** (SendGrid → Settings → Sender Authentication → Single Sender Verification). |
+| `MAIL_FROM_NAME` | `Pannéo` | | |
+
+> Limitations : gratuit ~100 e-mails/jour (60 jours d'essai) ; « Single Sender »
+> sans domaine ⇒ pas de SPF/DKIM, délivrabilité parfois réduite. Pour la
+> production durable, préférer un domaine vérifié (~10 $/an) + Resend/Mailgun,
+> ou passer Railway en Pro pour conserver le SMTP Gmail.
+
+### 4b. Alternative : SMTP Gmail (uniquement plan Railway Pro)
+
+| Variable | Valeur | Obligatoire | Commentaire |
+| -------- | ------ | ----------- | ----------- |
+| `OTP_DELIVERY` | `mail` | ✅ | |
 | `MAIL_MAILER` | `smtp` | ✅ | |
+| `MAIL_SCHEME` | `smtp` | ✅ | `smtps` + port `465` ou `smtp` + port `587`. **Jamais `tls`** (erreur « scheme not supported »). |
 | `MAIL_HOST` | `smtp.gmail.com` | ✅ | |
 | `MAIL_PORT` | `587` | ✅ | TLS/STARTTLS. |
-| `MAIL_USERNAME` | `panneoartisan@gmail.com` | ✅ | Adresse d'expédition. |
+| `MAIL_USERNAME` | `panneoartisan@gmail.com` | ✅ | **Adresse complète** (Gmail rejette un username tronqué : erreur 535). |
 | `MAIL_PASSWORD` | *(mot de passe d'application Gmail)* | ✅ | Gmail → Sécurité → « Mots de passe d'application » (16 caractères). Jamais le mot de passe du compte. |
 | `MAIL_FROM_ADDRESS` | `panneoartisan@gmail.com` | ✅ | |
 | `MAIL_FROM_NAME` | `Pannéo` | | |
@@ -126,11 +151,8 @@ DB_CONNECTION=pgsql
 DB_URL=${{Postgres.DATABASE_URL}}
 PERSISTENT_STORAGE_PATH=/data
 OTP_DELIVERY=mail
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=panneoartisan@gmail.com
-MAIL_PASSWORD=<app-password>
+MAIL_MAILER=sendgrid
+SENDGRID_API_KEY=SG.<clé>
 MAIL_FROM_ADDRESS=panneoartisan@gmail.com
 MAIL_FROM_NAME=Pannéo
 SESSION_DRIVER=database

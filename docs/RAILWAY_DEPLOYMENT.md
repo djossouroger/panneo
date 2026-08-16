@@ -64,7 +64,12 @@ Copier le tableau de `docs/RAILWAY_VARIABLES.md`, notamment :
   et la coller. C'est la variable la plus critique (sessions, chiffrement).
 - `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://<domaine>`.
 - `LOG_CHANNEL=stderr`.
-- `OTP_DELIVERY=mail` + SMTP Gmail (`MAIL_*`).
+- `OTP_DELIVERY=mail` + e-mails via **SendGrid en API HTTPS**
+  (`MAIL_MAILER=sendgrid`, `SENDGRID_API_KEY=SG.…`). Pré-requis compte :
+  sendgrid.com → **Sender Authentication → Verify a Single Sender**
+  (`panneoartisan@gmail.com`), puis **API Keys → Create API Key**
+  (permissions **Mail Send**). Le SMTP Gmail (`MAIL_*`) ne fonctionne que
+  sur plan Railway **Pro** (SMTP sortant bloqué sur Hobby).
 - `SESSION_DRIVER=database`, `CACHE_STORE=database`, `QUEUE_CONNECTION=database`.
 - `ADMIN_NAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` (création de l'admin au seed).
 - `RAILPACK_PHP_EXTENSIONS=pdo_pgsql` (indispensable : extension PostgreSQL).
@@ -116,7 +121,7 @@ Cliquer **Deploy**. Au premier démarrage, Railpack :
 | ---- | -------------- |
 | Santé | `GET https://<domaine>/api/v1/health` → `{"status":"ok"}` |
 | Back-office | `https://<domaine>/admin` (connexion admin) |
-| Inscription + e-mail | Inscrire un compte via l'app → le code de vérification e-mail arrive (SMTP Gmail) |
+| Inscription + e-mail | Inscrire un compte via l'app → le code de vérification e-mail arrive (SendGrid) |
 | Mot de passe oublié | `POST /api/v1/auth/forgot-password` → e-mail reçu |
 | Upload | Photo de profil + portfolio + pièces d'identité (vérifier qu'elles réapparaissent après un redéploiement) |
 | Document privé | Sans session → 401 ; client → 403 ; autre artisan → 403 ; admin (back-office) → OK |
