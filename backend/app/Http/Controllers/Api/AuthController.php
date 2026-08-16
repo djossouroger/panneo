@@ -174,7 +174,11 @@ class AuthController extends Controller
         $user = User::where('email', $validated['email'])->first();
 
         if ($user) {
-            $this->otp->sendResetCode($user->email, \App\Models\VerificationCode::PURPOSE_PASSWORD_RESET, 'email');
+            try {
+                $this->otp->sendResetCode($user->email, \App\Models\VerificationCode::PURPOSE_PASSWORD_RESET, 'email');
+            } catch (\Throwable $e) {
+                Log::warning(sprintf('Échec de l\'envoi du code de réinitialisation de mot de passe pour %s : %s', $user->email, $e->getMessage()));
+            }
         }
 
         return response()->json([
