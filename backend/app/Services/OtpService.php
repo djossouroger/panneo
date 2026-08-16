@@ -20,7 +20,7 @@ class OtpService
     public const TTL_EMAIL_CHANGE_MINUTES = 10;
     public const TTL_PASSWORD_RESET_MINUTES = 10;
 
-    public function __construct(private readonly SmsProviderInterface $sms)
+    public function __construct(private readonly ?SmsProviderInterface $sms = null)
     {
     }
 
@@ -67,7 +67,9 @@ class OtpService
             return;
         }
 
-        $this->sms->send($recipient, $message);
+        if ($this->sms !== null) {
+            $this->sms->send($recipient, $message);
+        }
     }
 
     private function mailSubject(string $purpose): string

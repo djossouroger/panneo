@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Services\Sms\LogSmsProvider;
-use App\Services\Sms\SmsProviderInterface;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,13 +11,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(SmsProviderInterface::class, function () {
-            if (app()->environment('production')) {
-                throw new \RuntimeException('Aucun fournisseur SMS réel n’est configuré pour la production.');
-            }
-
-            return new LogSmsProvider;
-        });
+        //
     }
 
     /**
