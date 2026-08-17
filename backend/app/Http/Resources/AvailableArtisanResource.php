@@ -43,7 +43,7 @@ class AvailableArtisanResource extends JsonResource
             'specialties' => $profile?->specialties ?? [],
             'stats' => [
                 'completed_interventions' => (int) ($this->completed_interventions ?? 0),
-                'average_rating' => $this->average_rating !== null ? $this->average_rating : null,
+                'average_rating' => $this->average_rating !== null ? (float) $this->average_rating : null,
                 'reviews_count' => (int) ($this->reviews_count ?? 0),
             ],
         ];

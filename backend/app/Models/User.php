@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class User extends Authenticatable
 {
@@ -138,12 +138,14 @@ class User extends Authenticatable
 
     public function sessions()
     {
-        return $this->hasMany(\Laravel\Sanctum\PersonalAccessToken::class, 'tokenable_id')->where('tokenable_type', self::class);
+        return $this->hasMany(PersonalAccessToken::class, 'tokenable_id')->where('tokenable_type', self::class);
     }
 
     public function averageRating()
     {
-        return $this->reviewsReceived()->avg('rating');
+        $avg = $this->reviewsReceived()->avg('rating');
+
+        return $avg !== null ? (float) $avg : null;
     }
 
     public function reviewsCount()

@@ -214,8 +214,9 @@ export function LoadMore({ loading, onPress }: { loading: boolean; onPress: () =
   );
 }
 
-export function StarRating({ rating, size = 14, showValue = true }: { rating: number | null; size?: number; showValue?: boolean }) {
-  const rounded = Math.round(rating ?? 0);
+export function StarRating({ rating, size = 14, showValue = true }: { rating: number | string | null; size?: number; showValue?: boolean }) {
+  const value = rating !== null && rating !== '' && !Number.isNaN(Number(rating)) ? Number(rating) : null;
+  const rounded = Math.round(value ?? 0);
   return (
     <View style={styles.starRow}>
       {Array.from({ length: 5 }).map((_, i) => (
@@ -227,7 +228,7 @@ export function StarRating({ rating, size = 14, showValue = true }: { rating: nu
           strokeWidth={1.5}
         />
       ))}
-      {showValue && rating !== null ? <Text style={[styles.starText, { fontSize: size - 2 }]}>{rating.toFixed(1)}</Text> : null}
+      {showValue && value !== null ? <Text style={[styles.starText, { fontSize: size - 2 }]}>{value.toFixed(1)}</Text> : null}
     </View>
   );
 }

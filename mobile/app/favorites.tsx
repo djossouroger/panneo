@@ -121,7 +121,7 @@ export default function FavoritesScreen() {
                       </View>
                       <Text style={styles.stats}>
                         {artisan.stats.completed_interventions} intervention{artisan.stats.completed_interventions !== 1 ? 's' : ''}
-                        {artisan.stats.reviews_count > 0 ? ` · ${artisan.stats.average_rating?.toFixed(1) ?? '—'} (${artisan.stats.reviews_count} avis)` : ''}
+                        {artisan.stats.reviews_count > 0 ? ` · ${artisan.stats.average_rating != null && !Number.isNaN(Number(artisan.stats.average_rating)) ? Number(artisan.stats.average_rating).toFixed(1) : '—'} (${artisan.stats.reviews_count} avis)` : ''}
                       </Text>
                     </View>
                   </Pressable>

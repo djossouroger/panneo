@@ -87,7 +87,7 @@ export default function ArtisanPublicProfileScreen() {
   const catName = primaryCategory?.name || 'Métier non renseigné';
   const Icon = primaryCategory ? getCategoryIcon(primaryCategory.icon) : Wrench;
   const stats = artisan.stats;
-  const rating = stats?.average_rating ?? null;
+  const rating = stats?.average_rating != null && !Number.isNaN(Number(stats.average_rating)) ? Number(stats.average_rating) : null;
   const reviewsCount = stats?.reviews_count ?? 0;
   const completed = stats?.completed_interventions ?? 0;
   const isVerified = profile.verification_status === 'verified';

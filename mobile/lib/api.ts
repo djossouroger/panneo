@@ -129,7 +129,7 @@ export type RepairRequestOfferStatus = 'pending' | 'accepted' | 'rejected' | 'ca
 
 export type ArtisanStats = {
   completed_interventions: number;
-  average_rating: number | null;
+  average_rating: number | string | null;
   reviews_count: number;
 };
 

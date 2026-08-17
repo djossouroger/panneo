@@ -38,7 +38,7 @@ class FavoriteController extends Controller
                 'is_available' => (bool) $artisan->artisanProfile?->is_available,
                 'stats' => [
                     'completed_interventions' => (int) ($artisan->completed_interventions ?? 0),
-                    'average_rating' => $artisan->average_rating,
+                    'average_rating' => $artisan->average_rating !== null ? (float) $artisan->average_rating : null,
                     'reviews_count' => (int) ($artisan->reviews_count ?? 0),
                 ],
             ])->values(),

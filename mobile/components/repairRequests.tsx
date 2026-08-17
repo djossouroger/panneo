@@ -189,7 +189,7 @@ export function ArtisanCard({ artisan, onChoose, onViewProfile, loading = false,
   disabled?: boolean;
 }) {
   const stats = artisan.stats;
-  const rating = stats?.average_rating ?? null;
+  const rating = stats?.average_rating != null && !Number.isNaN(Number(stats.average_rating)) ? Number(stats.average_rating) : null;
   const reviewsCount = stats?.reviews_count ?? 0;
   const completed = stats?.completed_interventions ?? 0;
 
