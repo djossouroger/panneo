@@ -13,6 +13,7 @@ use App\Models\Review;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class DemoSeeder extends Seeder
@@ -21,6 +22,7 @@ class DemoSeeder extends Seeder
 
     public function run(): void
     {
+        $this->ensureDemoDocuments();
         $admin = $this->createUser([
             'name' => 'Démo Admin',
             'email' => 'admin.demo@panneo.test',
@@ -124,6 +126,27 @@ class DemoSeeder extends Seeder
         $this->createDemoRequests($client, $artisanUser, $plumbing, $electricity);
 
         $this->createCityClusters($admin);
+    }
+
+    /**
+     * Copie les documents de démonstration (CNI / selfie) depuis les assets
+     * versionnés vers le stockage privé, s'ils n'y sont pas déjà.
+     * Permet au clonage du dépôt (nouveau PC) de fonctionner sans étape manuelle.
+     */
+    private function ensureDemoDocuments(): void
+    {
+        $assets = __DIR__.'/assets/demo';
+
+        foreach (['demo_cni.jpg', 'demo_selfie.jpg'] as $file) {
+            $path = 'documents/'.$file;
+
+            if (! Storage::disk('local')->exists($path)) {
+                Storage::disk('local')->put(
+                    $path,
+                    file_get_contents($assets.'/'.$file)
+                );
+            }
+        }
     }
 
     /**

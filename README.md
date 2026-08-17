@@ -223,6 +223,7 @@ Tout est dans [`docs/`](docs/) :
 | `docs/SECURITY.md`                                 | Auth, OTP, tokens, bonnes pratiques |
 | `docs/DESIGN_SYSTEM.md`                            | Design system mobile |
 | `docs/MANUAL_TEST_PLAN.md`                         | Plan de test manuel |
+| `docs/CLONE_OTHER_PC.md`                           | Cloner et lancer sur un AUTRE PC (plan de secours soutenance, sans bug) |
 | `docs/DEMO.md`                                     | Scénario de démonstration |
 | `docs/SOUTENANCE.md`                               | Guide de maintenance / opérations |
 | `docs/EXISTING_EXTRA_FEATURES.md`                  | Fonctionnalités hors périmètre initial |
