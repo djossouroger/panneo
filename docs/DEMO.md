@@ -14,6 +14,27 @@ Le mot de passe commun des comptes démo est défini dans `backend/database/seed
 | Artisan **validé**          | `artisan.demo@panneo.test` | +2290100000003 | `verified`                 |
 | Artisan **en attente**      | `artisan2.pending@panneo.test` | +2290100000004 | `pending` (à valider)  |
 
+### Comptes par ville
+
+Pour garantir qu'un client trouve toujours un dépanneur **dans sa propre ville**, un client
+et **deux artisans validés** (plomberie+électricité+électroménager / climatisation+serrurerie)
+sont créés pour chacune des villes suivantes (disponibles 7j/7 24h) :
+
+| Ville       | Client                          | Artisan plomberie                                  | Artisan climatisation                                      |
+| ----------- | ------------------------------- | -------------------------------------------------- | ----------------------------------------------------------- |
+| Cotonou     | `client.cotonou.demo@panneo.test`   | `artisan.plomberie.cotonou.demo@panneo.test`   | `artisan.climatisation.cotonou.demo@panneo.test`   |
+| Akpakpa     | `client.akpakpa.demo@panneo.test`   | `artisan.plomberie.akpakpa.demo@panneo.test`   | `artisan.climatisation.akpakpa.demo@panneo.test`   |
+| Calavi      | `client.calavi.demo@panneo.test`    | `artisan.plomberie.calavi.demo@panneo.test`    | `artisan.climatisation.calavi.demo@panneo.test`    |
+| Porto-Novo  | `client.porto-novo.demo@panneo.test`| `artisan.plomberie.porto-novo.demo@panneo.test`| `artisan.climatisation.porto-novo.demo@panneo.test`|
+| Parakou     | `client.parakou.demo@panneo.test`   | `artisan.plomberie.parakou.demo@panneo.test`   | `artisan.climatisation.parakou.demo@panneo.test`   |
+| Ouidah      | `client.ouidah.demo@panneo.test`    | `artisan.plomberie.ouidah.demo@panneo.test`    | `artisan.climatisation.ouidah.demo@panneo.test`    |
+| Bohicon     | `client.bohicon.demo@panneo.test`   | `artisan.plomberie.bohicon.demo@panneo.test`   | `artisan.climatisation.bohicon.demo@panneo.test`   |
+| Abomey      | `client.abomey.demo@panneo.test`    | `artisan.plomberie.abomey.demo@panneo.test`    | `artisan.climatisation.abomey.demo@panneo.test`    |
+
+Chaque client de ville a une demande `pending` pré-créée
+(`PAN-2026-<Ville>-DEMO`) : connectez-vous et la recherche de dépanneurs affiche
+immédiatement 1–2 artisans **de la même ville**.
+
 Demandes de démonstration pré-créées pour `client.demo@panneo.test` :
 
 | Référence          | Catégorie    | Statut            | Détail                               |

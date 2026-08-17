@@ -148,6 +148,13 @@ Créés par `php artisan migrate --seed` (mot de passe commun documenté dans
 | Artisan **validé**          | `artisan.demo@panneo.test` | +2290100000003 | `verified`                 |
 | Artisan **en attente**      | `artisan2.pending@panneo.test` | +2290100000004 | `pending` (pour valider) |
 
+**Un client + deux artisans validés** (plomberie / climatisation) existent aussi pour
+**chaque ville** : `client.<ville>.demo@panneo.test` et
+`artisan.plomberie.<ville>.demo@panneo.test`, `artisan.climatisation.<ville>.demo@panneo.test`
+avec `<ville>` ∈ { cotonou, akpakpa, calavi, porto-novo, parakou, ouidah, bohicon, abomey }.
+Chaque client de ville a une demande `pending` pré-créée → la recherche affiche 1–2 artisans
+de sa ville. (Voir `docs/DEMO.md` pour le tableau complet.)
+
 Demandes de démonstration pré-créées pour le client `client.demo@panneo.test` :
 
 | Référence          | Catégorie    | Statut          | Détail                                    |
