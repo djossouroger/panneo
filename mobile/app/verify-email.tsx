@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { MailCheck } from 'lucide-react-native';
+import { ChevronLeft, MailCheck } from 'lucide-react-native';
 import { colors } from '../components/theme';
 import { AppButton, AppInput, ErrorMessage, LoadingState, ScreenContainer } from '../components/ui';
 import { ApiError, confirmEmailVerify, fetchMe, friendlyError, sendEmailVerifyCode } from '../lib/api';
@@ -95,6 +95,12 @@ export default function VerifyEmailScreen() {
 
   return (
     <ScreenContainer>
+      <View style={styles.topBar}>
+        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/login'))} style={styles.backButton} hitSlop={8}>
+          <ChevronLeft size={22} color={colors.text} />
+        </Pressable>
+        <Text style={styles.headerTitle}>Vérification e-mail</Text>
+      </View>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View style={styles.iconBox}>
@@ -121,6 +127,9 @@ export default function VerifyEmailScreen() {
 }
 
 const styles = StyleSheet.create({
+  topBar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border },
+  backButton: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { color: colors.text, fontSize: 20, fontWeight: '700' },
   content: { paddingVertical: 32, gap: 8 },
   header: { alignItems: 'center', marginBottom: 20, gap: 10 },
   iconBox: { width: 64, height: 64, borderRadius: 20, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
