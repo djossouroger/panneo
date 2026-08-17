@@ -12,52 +12,166 @@ Monorepo composé de deux projets :
 
 ---
 
-## Démarrage rapide
+## Démarrage LOCAL (version soutenance — Windows)
 
-### Backend
+> Le déploiement Railway est **suspendu**. Cette version est conçue pour tourner
+> entièrement en local. Toute la documentation de déploiement (Railway, futur VPS)
+> reste disponible dans [`docs/`](docs/).
 
-```bash
-cd backend
+### 1. Prérequis
+
+- **XAMPP** (Apache + PHP 8.2) : https://www.apachefriends.org
+- **PostgreSQL 18** installé comme service Windows (`postgresql-x64-18`) : https://www.postgresql.org
+- **Composer** : https://getcomposer.org
+- **Node.js LTS** (pour Expo) : https://nodejs.org
+- **Un téléphone Android/iOS** avec l'app **Expo Go** (même Wi-Fi que le PC), ou un émulateur.
+
+### 2. PostgreSQL
+
+1. Démarrer le service PostgreSQL :
+   ```powershell
+   Start-Service postgresql-x64-18
+   ```
+2. Créer la base (une seule fois) :
+   ```powershell
+   & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -h 127.0.0.1 -c "CREATE DATABASE panneo;"
+   ```
+   (mot de passe `postgres` demandé — celui configuré à l'installation)
+
+### 3. Backend Laravel
+
+Ouvrir un terminal PowerShell **dans le dossier `backend`** :
+
+```powershell
+cd C:\xampp82\htdocs\panneo\backend
+
+# 1. Dépendances
 composer install
-cp .env.example .env
+npm install
+
+# 2. Fichier d'environnement (une seule fois)
+Copy-Item .env.example .env
 php artisan key:generate
+# -> Éditer .env : DB_PASSWORD=..., MAIL_USERNAME=..., MAIL_PASSWORD=... (voir §6)
+
+# 3. Schéma + données de démonstration
 php artisan migrate --seed
-php artisan serve
+
+# 4. Stockage public (photos)
+php artisan storage:link
+
+# 5. Lancer l'API + back-office
+php artisan serve --host=0.0.0.0 --port=8001
 ```
 
-### Mobile
+L'API est disponible sur `http://localhost:8001/api/v1`.
 
-```bash
-cd mobile
+### 4. Back-office admin
+
+Toujours avec le serveur lancé (§3), ouvrir :
+
+```
+http://localhost:8001/admin
+```
+
+Compte admin (voir §8).
+
+### 5. Application mobile Expo
+
+Ouvrir un **second** terminal PowerShell **dans le dossier `mobile`** :
+
+```powershell
+cd C:\xampp82\htdocs\panneo\mobile
 npm install
 npx expo start
 ```
 
-La base URL de l'API est déduite automatiquement de l'adresse du serveur Metro
-(`EXPO_PUBLIC_API_URL` vide → port 8001 de l'hôte). On peut la surcharger :
+Scanner le **QR code** avec **Expo Go** sur le téléphone (ou appuyer sur `a` pour
+l'émulateur Android, `w` pour le web).
 
-```bash
-# Windows PowerShell
-$env:EXPO_PUBLIC_API_URL="http://192.168.x.x:8001/api/v1"
-npx expo start
+> L'URL de l'API est **déduite automatiquement** de l'adresse IP du serveur Metro
+> (`EXPO_PUBLIC_API_URL` vide dans `mobile/.env` → `http://<IP-PC>:8001/api/v1`).
+
+### 6. Adresse IP à utiliser pour le téléphone
+
+Le téléphone et le PC doivent être sur le **même réseau Wi-Fi**.
+
+- Trouver l'IP locale du PC :
+  ```powershell
+  ipconfig
+  ```
+  → chercher la ligne **Adresse IPv4** de la carte Wi-Fi (ex. `192.168.1.64`).
+
+- Le backend doit être lancé avec `--host=0.0.0.0` (voir §3) pour être accessible
+  depuis le réseau.
+
+- Si la déduction automatique ne fonctionne pas, forcer l'URL dans `mobile/.env` :
+  ```
+  EXPO_PUBLIC_API_URL=http://192.168.1.64:8001/api/v1
+  ```
+  puis relancer `npx expo start` (purger le cache avec `npx expo start -c`).
+
+- Vérifier l'accès depuis le téléphone : ouvrir `http://192.168.1.64:8001/api/v1/health`
+  dans le navigateur du téléphone → doit répondre `{"success":true,...}`.
+
+### 7. Configuration SMTP (e-mails + OTP)
+
+Dans `backend/.env` :
+
 ```
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_ENCRYPTION=tls
+MAIL_USERNAME=<adresse Gmail complète>
+MAIL_PASSWORD=<mot de passe d'application Gmail>
+MAIL_FROM_ADDRESS=<adresse Gmail>
+OTP_DELIVERY=mail
+```
+
+> **Mot de passe d'application Gmail** : Google → Compte → Sécurité →
+> « Mots de passe d'application » (nécessite la validation en 2 étapes activée).
+> Le `MAIL_PASSWORD` n'est **pas** le mot de passe du compte Gmail.
+
+Pour déboguer sans envoyer de vrais e-mails : `OTP_DELIVERY=log` → les codes sont
+écrits dans `backend/storage/logs/laravel.log`.
+
+### 8. Comptes de démonstration
+
+Créés par `php artisan migrate --seed` (mot de passe commun documenté dans
+`docs/DEMO.md`, modifiable dans `backend/database/seeders/DemoSeeder.php`) :
+
+| Rôle                        | Email                      | Téléphone      | Statut                     |
+| --------------------------- | -------------------------- | -------------- | -------------------------- |
+| Admin back-office           | `admin.demo@panneo.test`   | +2290100000001 | —                          |
+| Client                      | `client.demo@panneo.test`  | +2290100000002 | —                          |
+| Artisan **validé**          | `artisan.demo@panneo.test` | +2290100000003 | `verified`                 |
+| Artisan **en attente**      | `artisan2.pending@panneo.test` | +2290100000004 | `pending` (pour valider) |
+
+Demandes de démonstration pré-créées pour le client `client.demo@panneo.test` :
+
+| Référence          | Catégorie    | Statut          | Détail                                    |
+| ------------------ | ------------ | --------------- | ----------------------------------------- |
+| `PAN-2026-DEMO001` | Plomberie    | `pending`       | recherche de dépanneurs disponible        |
+| `PAN-2026-DEMO002` | Plomberie    | `awaiting_artisan` | offre en attente pour l'artisan démo   |
+| `PAN-2026-DEMO003` | Électricité  | `completed`     | intervention terminée + avis 4/5          |
+
+**Les mots de passe réels ne sont jamais commités.** Ils vivent uniquement dans le
+`.env` local (ignoré par git) et dans `database/seeders/DemoSeeder.php`.
 
 ---
 
-## Comptes de démonstration (seeder)
+## Vérification / tests
 
-Mot de passe commun : `Demo123!`
+```powershell
+# Backend (149 tests / 563 assertions)
+cd C:\xampp82\htdocs\panneo\backend
+php artisan test
 
-| Rôle     | Email                        | Téléphone       |
-| -------- | ---------------------------- | --------------- |
-| Admin    | `admin.demo@panneo.test`     | +2290100000001  |
-| Client   | `client.demo@panneo.test`    | +2290100000002  |
-| Artisan  | `artisan.demo@panneo.test`   | +2290100000003  |
-
-L'artisan de démo est créé **déjà validé** (`verification_status = verified`), il peut donc
-recevoir des demandes immédiatement. L'administrateur se connecte au back-office sur
-`http://localhost:8000/admin`. Un artisan inscrit via l'app (3 étapes : profil → activité →
-**identité avec pièce + selfie**) est créé `pending` et doit être validé par l'admin.
+# Mobile (typcheck TypeScript)
+cd C:\xampp82\htdocs\panneo\mobile
+npx tsc --noEmit
+```
 
 ---
 
@@ -84,54 +198,6 @@ mobile (Expo/React Native)  ──HTTP/JSON──►  API Laravel /api/v1 (Sanct
 
 ---
 
-## Validation
-
-```bash
-# Backend (146 tests / 560 assertions)
-cd backend
-php artisan test
-
-# Mobile
-cd mobile
-npx tsc --noEmit
-npx expo export --platform ios
-```
-
----
-
-## Déploiement (Railway)
-
-Le backend est prêt pour Railway : **un seul service App** (Laravel + back-office
-Blade + assets Vite), sans worker ni cron (e-mails synchrones, aucun scheduler).
-Procédure complète : [`docs/RAILWAY_DEPLOYMENT.md`](docs/RAILWAY_DEPLOYMENT.md),
-variables : [`docs/RAILWAY_VARIABLES.md`](docs/RAILWAY_VARIABLES.md).
-
-Résumé :
-
-```bash
-# Railway : Root Directory = backend  (monorepo à pousser sur GitHub)
-# Build : Railpack (détection automatique Laravel, FrankenPHP)
-# Volume : monté sur /data  →  PERSISTENT_STORAGE_PATH=/data
-# Pre-Deploy Command :
-chmod +x railway/init-app.sh && sh railway/init-app.sh
-# Variables clés : APP_ENV=production, APP_DEBUG=false, APP_KEY (générée une fois),
-#   DB_URL=${{Postgres.DATABASE_URL}}, LOG_CHANNEL=stderr,
-#   OTP_DELIVERY=mail + SMTP Gmail, RAILPACK_PHP_EXTENSIONS=pdo_pgsql
-```
-
-Points garantis :
-
-- **Uploads persistants** (volume) : photos publiques → `/data/public`,
-  documents privés (CNI + selfie) → `/data/private`.
-- **`DatabaseSeeder` sécurisé en production** : aucun compte démo créé
-  (`DemoSeeder` exclu), admin via `ADMIN_*` ou `php artisan admin:create`.
-- **Route `/api/v1/health`** sous contrôleur → compatible `route:cache`/Railpack.
-- **Futur APK Android** : `app.json` + `eas.json` prêts
-  ([`docs/APK_RELEASE.md`](docs/APK_RELEASE.md)) — génération uniquement après
-  définition du domaine de production.
-
----
-
 ## Documentation
 
 Tout est dans [`docs/`](docs/) :
@@ -155,5 +221,5 @@ Tout est dans [`docs/`](docs/) :
 | `docs/EXISTING_EXTRA_FEATURES.md`                  | Fonctionnalités hors périmètre initial |
 | `docs/FINAL_AUDIT_REPORT.md`                       | Rapport final de l'audit LOT 08 |
 | `docs/RAILWAY_VARIABLES.md`                        | Variables d'environnement Railway (DB, SMTP, stockage, admin) |
-| `docs/RAILWAY_DEPLOYMENT.md`                       | Déploiement complet sur Railway (guide pas à pas) |
+| `docs/RAILWAY_DEPLOYMENT.md`                       | Déploiement complet sur Railway (guide pas à pas, réutilisable pour un VPS) |
 | `docs/APK_RELEASE.md`                              | Préparation / génération d'un futur APK Android (EAS) |

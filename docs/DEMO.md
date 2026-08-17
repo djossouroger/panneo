@@ -2,12 +2,32 @@
 
 Durée cible : ~10 minutes. Préparez le backend seedé et le mobile avant de commencer.
 
+## Comptes de démonstration
+
+Le mot de passe commun des comptes démo est défini dans `backend/database/seeders/DemoSeeder.php`
+(constante `DEMO_PASSWORD`, non commitée ailleurs).
+
+| Rôle                        | Email                      | Téléphone      | Statut                     |
+| --------------------------- | -------------------------- | -------------- | -------------------------- |
+| Admin back-office           | `admin.demo@panneo.test`   | +2290100000001 | —                          |
+| Client                      | `client.demo@panneo.test`  | +2290100000002 | —                          |
+| Artisan **validé**          | `artisan.demo@panneo.test` | +2290100000003 | `verified`                 |
+| Artisan **en attente**      | `artisan2.pending@panneo.test` | +2290100000004 | `pending` (à valider)  |
+
+Demandes de démonstration pré-créées pour `client.demo@panneo.test` :
+
+| Référence          | Catégorie    | Statut            | Détail                               |
+| ------------------ | ------------ | ----------------- | ------------------------------------ |
+| `PAN-2026-DEMO001` | Plomberie    | `pending`         | recherche de dépanneurs disponible   |
+| `PAN-2026-DEMO002` | Plomberie    | `awaiting_artisan`| offre en attente pour l'artisan démo |
+| `PAN-2026-DEMO003` | Électricité  | `completed`       | intervention terminée + avis 4/5     |
+
 ## Préparation
 
 ```bash
 cd backend
-php artisan migrate:fresh --seed
-php artisan serve          # http://localhost:8000
+php artisan migrate --seed   # schéma + catégories + démo (idempotent)
+php artisan serve --host=0.0.0.0 --port=8001
 # autre terminal
 cd mobile
 npx expo start             # ouvrir l'app (iOS/Android/web)
@@ -19,12 +39,14 @@ npx expo start             # ouvrir l'app (iOS/Android/web)
 ## Étapes
 
 ### 1. L'artisan doit être validé (3 min)
-- Créez un **nouveau** compte artisan (ex. `jean.artisan@test.com`) : **3 étapes** (profil →
-  activité → identité). À l'étape identité, ajoutez une **pièce d'identité** (photo) et un
-  **selfie** (appareil photo) — obligatoires ; tentez un fichier non-image → refus.
+- Un artisan **en attente** est déjà disponible pour cette démo : `artisan2.pending@panneo.test`
+  (électricien, dossier soumis). Vous pouvez aussi créer un **nouveau** compte artisan
+  (ex. `jean.artisan@test.com`) : **3 étapes** (profil → activité → identité). À l'étape
+  identité, ajoutez une **pièce d'identité** (photo) et un **selfie** (appareil photo) —
+  obligatoires ; tentez un fichier non-image → refus.
 - Après inscription, son **accueil** affiche l'**écran dédié « Compte en cours de validation »**
   (avec la date de soumission) et le toggle de disponibilité n'apparaît pas.
-- Ouvrez le back-office `http://localhost:8000/admin` (admin.demo) → **Vérifications** →
+- Ouvrez le back-office `http://localhost:8001/admin` (admin.demo) → **Vérifications** →
   le détail montre la **pièce et le selfie côte à côte** (clic = agrandir) → **« Valider cet
   artisan ? »** (modal).
 - Retournez dans le mobile → rafraîchissez : l'écran dédié disparaît, le tableau de bord est

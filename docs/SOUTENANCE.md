@@ -5,8 +5,9 @@
 - **Code** : `C:\xampp82\htdocs\panneo\backend` (Laravel), `mobile` (Expo).
 - **Base de données** : PostgreSQL (config `backend/.env`), SQLite in-memory en tests
   (`phpunit.xml`).
-- **Back-office** : `http://localhost:8000/admin` — login `admin.demo@panneo.test`/`Demo123!`.
-- **API** : `http://localhost:8000/api/v1` (OpenAPI manquante ; la référence est `docs/API.md`).
+- **Back-office** : `http://localhost:8001/admin` — login `admin.demo@panneo.test` (mot de passe
+  démo défini dans `backend/database/seeders/DemoSeeder.php`, jamais commité ailleurs).
+- **API** : `http://localhost:8001/api/v1` (OpenAPI manquante ; la référence est `docs/API.md`).
 
 ## Commandes récurrentes
 
@@ -16,7 +17,7 @@ composer install
 php artisan key:generate          # si .env vide
 php artisan migrate --seed        # schéma + catégories + démo
 php artisan migrate:fresh --seed  # réinitialisation complète
-php artisan serve                 # http://localhost:8000
+php artisan serve --host=0.0.0.0 --port=8001   # API + back-office
 php artisan queue:work            # traite e-mails/jobs (dev : driver log ok)
 php artisan test                  # 146 tests / 560 assertions
 vendor/bin/pint                   # lint

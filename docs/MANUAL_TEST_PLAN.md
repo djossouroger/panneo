@@ -5,7 +5,7 @@ mobile lancé (`npx expo start`). Codes OTP : `OTP_DELIVERY=log` → `backend/st
 `OTP_DELIVERY=mail` → dans la boîte e-mail (SMTP Gmail).
 
 Comptes : `artisan.demo@panneo.test`, `client.demo@panneo.test`, `admin.demo@panneo.test`
-(mot de passe `Demo123!`).
+(mot de passe commun défini dans `backend/database/seeders/DemoSeeder.php`).
 
 ## 1. Auth & compte
 

@@ -5,8 +5,8 @@ préfixées `/admin`, protégées par `auth:web` + `AdminOnly` (`role = admin`).
 
 ## Accès
 
-- URL : `http://localhost:8000/admin` (racine `/` redirige vers `admin.login`).
-- Compte démo : `admin.demo@panneo.test` / `Demo123!`.
+- URL : `http://localhost:8001/admin` (racine `/` redirige vers `admin.login`).
+- Compte démo : `admin.demo@panneo.test` (mot de passe défini dans `backend/database/seeders/DemoSeeder.php`).
 
 ## Pages
 
