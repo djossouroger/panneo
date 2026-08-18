@@ -37,6 +37,14 @@
           "cameraPermission": "Pannéo utilise l'appareil photo pour les photos de profil et le selfie de vérification d'identité.",
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#155EEF",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 300
+        }
       ]
     ]
   }

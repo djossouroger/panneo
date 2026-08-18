@@ -117,6 +117,7 @@ export default function SignupIdentityScreen() {
         district: draft.district || null,
       });
       await saveSession(session);
+      const needsVerify = session.email_verified === false;
 
       try {
         await submitVerification(session.token, [
@@ -129,12 +130,12 @@ export default function SignupIdentityScreen() {
           'Votre compte est créé mais le dossier d’identité n’a pas pu être envoyé. Complétez la vérification depuis votre espace artisan.',
           [{ text: 'OK' }]
         );
-        router.replace('/verify-email?next=/artisan/verification');
+        router.replace(needsVerify ? '/verify-email?next=/artisan/verification' : '/artisan/verification');
         return;
       }
 
       clearSignupDraft();
-      router.replace('/verify-email?next=/artisan/verification');
+      router.replace(needsVerify ? '/verify-email?next=/artisan/verification' : '/artisan/verification');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'La création du compte a échoué. Vérifiez le serveur puis réessayez.');
       setSubmitting(false);

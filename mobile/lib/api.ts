@@ -384,7 +384,7 @@ export async function login(email: string, password: string) {
 }
 
 export async function register(payload: Record<string, unknown>) {
-  const response = await apiRequest<{ user: User; token: string }>('/auth/register', {
+  const response = await apiRequest<{ user: User; token: string; email_verified?: boolean; requires_email_verification?: boolean }>('/auth/register', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -910,11 +910,12 @@ export async function deleteAccount(token: string, password: string): Promise<vo
   });
 }
 
-export async function forgotPassword(email: string): Promise<void> {
-  await apiRequest('/auth/forgot-password', {
+export async function forgotPassword(email: string): Promise<{ code?: string }> {
+  const response = await apiRequest<{ code?: string }>('/auth/forgot-password', {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
+  return response.data;
 }
 
 export async function resetPassword(email: string, code: string, password: string): Promise<void> {
@@ -924,11 +925,12 @@ export async function resetPassword(email: string, code: string, password: strin
   });
 }
 
-export async function sendEmailVerifyCode(email: string): Promise<void> {
-  await apiRequest('/auth/email-verify/send', {
+export async function sendEmailVerifyCode(email: string): Promise<{ email_verified?: boolean }> {
+  const response = await apiRequest<{ email_verified?: boolean }>('/auth/email-verify/send', {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
+  return response.data;
 }
 
 export async function confirmEmailVerify(email: string, code: string): Promise<{ email_verified: boolean }> {

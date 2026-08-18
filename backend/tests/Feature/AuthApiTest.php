@@ -43,7 +43,7 @@ class AuthApiTest extends TestCase
         $this->assertDatabaseHas('users', ['email' => 'client@example.com', 'role' => 'client']);
     }
 
-    public function test_registration_sends_an_email_verification_code(): void
+    public function test_registration_auto_verifies_email_in_log_mode(): void
     {
         $payload = [
             'name' => 'Client Vérif',
@@ -57,17 +57,12 @@ class AuthApiTest extends TestCase
         $response = $this->postJson('/api/v1/auth/register', $payload);
 
         $response->assertOk()
-            ->assertJsonPath('data.email_verified', false)
-            ->assertJsonPath('data.requires_email_verification', true);
+            ->assertJsonPath('data.email_verified', true)
+            ->assertJsonPath('data.requires_email_verification', false);
 
-        $this->assertDatabaseHas('verification_codes', [
-            'user_id' => null,
-            'purpose' => VerificationCode::PURPOSE_EMAIL_VERIFY,
-            'channel' => 'email',
-            'recipient' => 'verify@example.com',
-        ]);
+        $this->assertNotNull(User::where('email', 'verify@example.com')->firstOrFail()->email_verified_at);
 
-        $this->assertNull(User::where('email', 'verify@example.com')->firstOrFail()->email_verified_at);
+        $this->assertDatabaseCount('verification_codes', 0);
     }
 
     public function test_login_is_blocked_until_email_is_verified(): void
@@ -87,7 +82,7 @@ class AuthApiTest extends TestCase
             ->assertJsonPath('code', 'EMAIL_NOT_VERIFIED');
     }
 
-    public function test_email_verification_flow_unlocks_login(): void
+    public function test_email_verify_send_auto_verifies_in_log_mode(): void
     {
         $user = $this->createUser([
             'email' => 'pending@example.com',
@@ -98,21 +93,7 @@ class AuthApiTest extends TestCase
         ]);
 
         $this->postJson('/api/v1/auth/email-verify/send', ['email' => 'pending@example.com'])
-            ->assertOk();
-
-        $this->assertDatabaseHas('verification_codes', [
-            'user_id' => null,
-            'purpose' => VerificationCode::PURPOSE_EMAIL_VERIFY,
-            'channel' => 'email',
-            'recipient' => 'pending@example.com',
-        ]);
-
-        $this->seedEmailOtp('pending@example.com', '123456');
-
-        $this->postJson('/api/v1/auth/email-verify/confirm', [
-            'email' => 'pending@example.com',
-            'code' => '123456',
-        ])->assertOk()
+            ->assertOk()
             ->assertJsonPath('data.email_verified', true);
 
         $this->assertNotNull($user->fresh()->email_verified_at);

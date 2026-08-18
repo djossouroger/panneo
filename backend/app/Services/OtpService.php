@@ -114,7 +114,12 @@ class OtpService
         return $latest === null || $latest->last_sent_at === null || $latest->last_sent_at->diffInSeconds(now()) >= self::RESEND_SECONDS;
     }
 
-    public function sendResetCode(string $recipient, string $purpose, string $channel): void
+    public function isMailDelivery(): bool
+    {
+        return config('otp.delivery', 'log') === 'mail';
+    }
+
+    public function sendResetCode(string $recipient, string $purpose, string $channel): ?string
     {
         $latest = VerificationCode::query()
             ->where('user_id', null)
@@ -144,6 +149,8 @@ class OtpService
         ]);
 
         $this->send($purpose, $channel, $recipient, $code);
+
+        return $this->isMailDelivery() ? null : $code;
     }
 
     public function verifyResetCode(string $recipient, string $purpose, string $channel, string $code): void

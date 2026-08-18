@@ -61,7 +61,11 @@ export default function SignupFormScreen() {
         role: 'client',
       });
       await saveSession(session);
-      router.replace('/verify-email');
+      if (session.email_verified === false) {
+        router.replace('/verify-email');
+      } else {
+        router.replace('/');
+      }
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : 'Création du compte impossible.');
       setFieldErrors({

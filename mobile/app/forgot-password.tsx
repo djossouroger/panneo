@@ -10,6 +10,7 @@ export default function ForgotPasswordScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,10 +23,11 @@ export default function ForgotPasswordScreen() {
     setLoading(true);
     setError(null);
     try {
-      await forgotPassword(email.trim());
+      const result = await forgotPassword(email.trim());
+      setOtpCode(result.code ?? '');
       setSent(true);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Impossible d’envoyer le code. Vérifiez le serveur puis réessayez.');
+      setError(err instanceof ApiError ? err.message : 'Impossible d\'envoyer le code. Vérifiez le serveur puis réessayez.');
     } finally {
       setLoading(false);
     }
@@ -41,15 +43,27 @@ export default function ForgotPasswordScreen() {
         <View style={styles.successIcon}>
           <CircleCheck size={34} color={colors.success} />
         </View>
-        <Text style={styles.title}>Vérifiez votre boîte mail</Text>
-        <Text style={styles.subtitle}>
-          Si un compte correspond à cette adresse, vous recevrez un code de vérification par e-mail pour réinitialiser votre mot de passe.
-        </Text>
+        <Text style={styles.title}>Code de réinitialisation</Text>
+        {otpCode ? (
+          <Text style={styles.subtitle}>
+            Votre code de réinitialisation est :
+          </Text>
+        ) : (
+          <Text style={styles.subtitle}>
+            Si un compte correspond à cette adresse, vous recevrez un code de vérification par e-mail pour réinitialiser votre mot de passe.
+          </Text>
+        )}
 
-        <AppButton title="Saisir le code reçu" onPress={() => router.replace(`/reset-password?email=${encodeURIComponent(email.trim())}` as never)} />
+        {otpCode ? (
+          <View style={styles.codeBox}>
+            <Text style={styles.codeText}>{otpCode}</Text>
+          </View>
+        ) : null}
+
+        <AppButton title="Saisir le code" onPress={() => router.replace(`/reset-password?email=${encodeURIComponent(email.trim())}` as never)} />
 
         <View style={styles.footerRow}>
-          <Text style={styles.footerText}>Vous n’avez pas reçu le code ?</Text>
+          <Text style={styles.footerText}>Vous n'avez pas reçu le code ?</Text>
           <Pressable onPress={() => setSent(false)}>
             <Text style={styles.linkText}>Réessayer</Text>
           </Pressable>
@@ -89,6 +103,8 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, lineHeight: 36, fontWeight: '700', color: colors.text, marginBottom: 8, textAlign: 'center' },
   subtitle: { fontSize: 15, color: colors.muted, marginBottom: 24, lineHeight: 22, textAlign: 'center' },
   successIcon: { alignSelf: 'center', width: 72, height: 72, borderRadius: 24, backgroundColor: '#E7F9F0', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  codeBox: { alignSelf: 'center', backgroundColor: colors.primaryLight, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 24, marginBottom: 20 },
+  codeText: { fontSize: 28, fontWeight: '800', color: colors.primary, letterSpacing: 6, textAlign: 'center' },
   footerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 16, gap: 6 },
   footerText: { color: colors.muted },
   linkText: { color: colors.primary, fontWeight: '700' },

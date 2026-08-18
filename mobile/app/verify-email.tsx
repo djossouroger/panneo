@@ -6,7 +6,7 @@ import { ChevronLeft, MailCheck } from 'lucide-react-native';
 import { colors } from '../components/theme';
 import { AppButton, AppInput, ErrorMessage, LoadingState, ScreenContainer } from '../components/ui';
 import { ApiError, confirmEmailVerify, fetchMe, friendlyError, sendEmailVerifyCode } from '../lib/api';
-import { getStoredUser, getToken, restoreSession, saveUser } from '../lib/session';
+import { getStoredUser, getToken, isEmailVerified, restoreSession, saveUser } from '../lib/session';
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
@@ -50,7 +50,20 @@ export default function VerifyEmailScreen() {
     setSending(true);
     setError(null);
     try {
-      await sendEmailVerifyCode(email.trim());
+      const result = await sendEmailVerifyCode(email.trim());
+      if (result.email_verified) {
+        const token = await getToken();
+        if (token) {
+          try {
+            const user = await fetchMe(token);
+            await saveUser(user);
+          } catch {
+            const stored = await getStoredUser();
+            if (stored) await saveUser({ ...stored, email_verified_at: new Date().toISOString() });
+          }
+        }
+        router.replace(params.next ?? '/');
+      }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : friendlyError(err));
     } finally {

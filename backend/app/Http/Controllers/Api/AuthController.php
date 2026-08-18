@@ -66,10 +66,18 @@ class AuthController extends Controller
         $user->load('artisanProfile.categories');
         $token = $user->createToken('mobile')->plainTextToken;
 
-        try {
-            $this->otp->sendResetCode($user->email, VerificationCode::PURPOSE_EMAIL_VERIFY, 'email');
-        } catch (\Throwable $e) {
-            Log::warning(sprintf('Échec de l\'envoi du code de vérification e-mail pour %s : %s', $user->email, $e->getMessage()));
+        $emailVerified = false;
+
+        if ($this->otp->isMailDelivery()) {
+            try {
+                $this->otp->sendResetCode($user->email, VerificationCode::PURPOSE_EMAIL_VERIFY, 'email');
+            } catch (\Throwable $e) {
+                Log::warning(sprintf('Échec de l\'envoi du code de vérification e-mail pour %s : %s', $user->email, $e->getMessage()));
+            }
+        } else {
+            $user->forceFill(['email_verified_at' => now()])->save();
+            $emailVerified = true;
+            $this->audit->record($user->id, 'email_verified');
         }
 
         return response()->json([
@@ -78,8 +86,8 @@ class AuthController extends Controller
             'data' => [
                 'user' => $user->toArray(),
                 'token' => $token,
-                'email_verified' => false,
-                'requires_email_verification' => true,
+                'email_verified' => $emailVerified,
+                'requires_email_verification' => ! $emailVerified,
             ],
         ]);
     }
@@ -172,10 +180,11 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $validated['email'])->first();
+        $otpCode = null;
 
         if ($user) {
             try {
-                $this->otp->sendResetCode($user->email, \App\Models\VerificationCode::PURPOSE_PASSWORD_RESET, 'email');
+                $otpCode = $this->otp->sendResetCode($user->email, \App\Models\VerificationCode::PURPOSE_PASSWORD_RESET, 'email');
             } catch (\Throwable $e) {
                 Log::warning(sprintf('Échec de l\'envoi du code de réinitialisation pour %s : %s', $user->email, $e->getMessage()));
             }
@@ -184,7 +193,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Si un compte existe avec cette adresse, un code de réinitialisation a été envoyé.',
-            'data' => [],
+            'data' => $otpCode !== null ? ['code' => $otpCode] : [],
         ]);
     }
 
@@ -231,6 +240,17 @@ class AuthController extends Controller
         $user = User::where('email', $validated['email'])->first();
 
         if ($user && ! $user->email_verified_at) {
+            if (! $this->otp->isMailDelivery()) {
+                $user->forceFill(['email_verified_at' => now()])->save();
+                $this->audit->record($user->id, 'email_verified');
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Adresse e-mail vérifiée.',
+                    'data' => ['email_verified' => true],
+                ]);
+            }
+
             try {
                 $this->otp->sendResetCode($user->email, VerificationCode::PURPOSE_EMAIL_VERIFY, 'email');
             } catch (\Throwable $e) {
